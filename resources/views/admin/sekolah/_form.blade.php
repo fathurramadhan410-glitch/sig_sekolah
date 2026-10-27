@@ -61,9 +61,16 @@
     </div>
 
     <div class="space-y-4">
-        <p class="font-medium">
-            Klik peta atau geser marker untuk menentukan lokasi sekolah
-        </p>
+        <div class="flex items-center justify-between">
+            <p class="font-medium">
+                Klik peta atau geser marker untuk menentukan lokasi
+            </p>
+            <!-- Tombol Latihan Mandiri: Gunakan Lokasi Saya -->
+            <button type="button" id="btn-lokasi" class="px-3 py-1 bg-emerald-600 text-white text-xs rounded hover:bg-emerald-700">
+                📍 Gunakan Lokasi Saya
+            </button>
+        </div>
+
         <div id="map-picker" style="height: 400px; width: 100%;"></div>
         <div class="grid grid-cols-2 gap-4">
             <div>
@@ -111,18 +118,22 @@
         attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
     }).addTo(map);
     const marker = L.marker(pusat, { draggable: true }).addTo(map);
+
     function isiKoordinat(lat, lng) {
         latInput.value = lat.toFixed(7);
         lngInput.value = lng.toFixed(7);
     }
+
     map.on('click', (e) => {
         marker.setLatLng(e.latlng);
         isiKoordinat(e.latlng.lat, e.latlng.lng);
     });
+
     marker.on('dragend', () => {
         const p = marker.getLatLng();
         isiKoordinat(p.lat, p.lng);
     });
+
     [latInput, lngInput].forEach((el) => {
         el.addEventListener('change', () => {
             const lat = parseFloat(latInput.value);
@@ -132,6 +143,24 @@
                 map.setView([lat, lng], 16);
             }
         });
+    });
+
+    // Script Latihan Mandiri: Tombol Gunakan Lokasi Saya
+    document.getElementById('btn-lokasi').addEventListener('click', () => {
+        if (navigator.geolocation) {
+            navigator.geolocation.getCurrentPosition((position) => {
+                const lat = position.coords.latitude;
+                const lng = position.coords.longitude;
+                latInput.value = lat.toFixed(7);
+                lngInput.value = lng.toFixed(7);
+                marker.setLatLng([lat, lng]);
+                map.setView([lat, lng], 16);
+            }, (error) => {
+                alert('Gagal mendeteksi lokasi: ' + error.message);
+            });
+        } else {
+            alert('Geolocation tidak didukung oleh browser Anda.');
+        }
     });
 </script>
 @endpush
